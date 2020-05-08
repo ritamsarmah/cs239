@@ -75,6 +75,7 @@ class Simon:
     def _define_uf(self):
         """
         Define a U_f gate that encodes function f.
+
         Returns
         -------
         U_f : DefGate

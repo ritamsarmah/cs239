@@ -53,7 +53,7 @@ class DeutschJozsa:
         p += [H(q) for q in range(self.n + 1)]
 
         # Apply U_f to all qubits
-        p += self._apply_uf(range(0, self.n + 1))
+        p += self._apply_uf(range(self.n + 1))
 
         # Apply Hadamard to first n qubits (ignoring helper bit)
         p += [H(q) for q in range(self.n)]

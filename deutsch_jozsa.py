@@ -83,7 +83,7 @@ class DeutschJozsa:
 
         Returns
         -------
-        [uf_defintion, U_f] : [DefGate, Callable]
+        [uf_definition, U_f] : [DefGate, Callable]
             Quil definition for U_f and the gate.
 
         """

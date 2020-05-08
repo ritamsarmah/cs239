@@ -52,13 +52,8 @@ class DeutschJozsa:
         # Apply Hadamard to all qubits
         p += [H(q) for q in range(self.n + 1)]
 
-        # Create U_f gate
-        uf_definition = self._define_uf()
-        U_f = uf_definition.get_constructor()
-
         # Apply U_f to all qubits
-        p += uf_definition
-        p += U_f(*range(0, self.n + 1))
+        p += self._apply_uf(range(0, self.n + 1))
 
         # Apply Hadamard to first n qubits (ignoring helper bit)
         p += [H(q) for q in range(self.n)]
@@ -68,6 +63,7 @@ class DeutschJozsa:
 
         # Get a QC with n bits + 1 helper bit
         qc = get_qc(f'{self.n + 1}q-qvm')
+        qc.compiler.client.timeout = 1000
         executable = qc.compile(p)
 
         result = qc.run(executable)
@@ -76,14 +72,19 @@ class DeutschJozsa:
         # The expression is cast to an int (False = 0 => balanced, True = 1 => constant)
         return int(np.count_nonzero(result) == 0)
 
-    def _define_uf(self):
+    def _apply_uf(self, qubits):
         """
-        Define a U_f gate that encodes oracle function f.
+        Creates a U_f gate that encodes oracle function f and applies it to qubits.
+
+        Parameters
+        -------
+        qubits : [int]
+            Qubits to apply U_f to.
 
         Returns
         -------
-        U_f : DefGate
-            Quil definition for U_f
+        [uf_defintion, U_f] : [DefGate, Callable]
+            Quil definition for U_f and the gate.
 
         """
 
@@ -97,4 +98,6 @@ class DeutschJozsa:
                 col = (x << 1) ^ (self.f(x) ^ b)
                 U_f[row][col] = 1
 
-        return DefGate("U_f", U_f)
+        uf_definition = DefGate("U_f", U_f)
+        gate = uf_definition.get_constructor()
+        return [uf_definition, gate(*qubits)]

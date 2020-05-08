@@ -41,6 +41,8 @@ if __name__ == "__main__":
         ((2, lambda x: 1), 1),
         ((2, lambda x: [1, 0, 0, 1][x]), 0),
         ((3, lambda x: 1), 1),
+        ((4, lambda x: 1), 1),
+        ((4, lambda x: x % 2), 0),
     ]
 
     test_algorithm(tests, deutsch_jozsa.DeutschJozsa)

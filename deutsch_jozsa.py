@@ -46,12 +46,11 @@ class DeutschJozsa:
         p = Program()
         ro = p.declare('ro', memory_type='BIT', memory_size=self.n)
 
-        # Initialize helper bit (at index n) to 1
+        # Set helper bit (at index n) to 1
         p += X(self.n)
 
         # Apply Hadamard to all qubits
-        for q in range(self.n + 1):
-            p += H(q)
+        p += [H(q) for q in range(self.n + 1)]
 
         # Create U_f gate
         uf_definition = self._define_uf()
@@ -62,15 +61,15 @@ class DeutschJozsa:
         p += U_f(*range(0, self.n + 1))
 
         # Apply Hadamard to first n qubits (ignoring helper bit)
-        for q in range(self.n):
-            p += H(q)
+        p += [H(q) for q in range(self.n)]
 
         # Measure first n qubits (ignoring helper bit)
-        for q in range(self.n):
-            p += MEASURE(q, ro[q])
+        p += [MEASURE(q, ro[q]) for q in range(self.n)]
 
-        qc = get_qc(f'{self.n + 1}q-qvm')  # n bits + 1 helper bit
+        # Get a QC with n bits + 1 helper bit
+        qc = get_qc(f'{self.n + 1}q-qvm')
         executable = qc.compile(p)
+
         result = qc.run(executable)
 
         # Count number of non-zeros, and if there are none it's constant.
@@ -79,7 +78,7 @@ class DeutschJozsa:
 
     def _define_uf(self):
         """
-        Define a U_f gate that encodes function f.
+        Define a U_f gate that encodes oracle function f.
 
         Returns
         -------
@@ -92,7 +91,6 @@ class DeutschJozsa:
         U_f = np.zeros((2 ** (self.n + 1),) * 2, dtype=int)
 
         # Apply definition of U_f = |x>|b + f(x)> to construct matrix
-        # using each input/output pair (x, fx respectively)
         for x in range(2 ** self.n):
             for b in [0, 1]:
                 row = (x << 1) ^ b

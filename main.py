@@ -5,29 +5,37 @@ import time
 
 
 def test_algorithm(tests, algorithm, verbose=True):
-    start = time.time()
-
     if verbose:
-        print(f"\nRunning tests for {algorithm.__name__}\n" + '-' * 40)
+        print(f"\nRunning tests for {algorithm.__name__}\n" + '-' * 50)
+        print("    n\ttime (s)\toutput\n" + '-' * 50)
+
+    passed = 0
+    total_time = 0
+    for (test_input, test_output) in tests:
+        start = time.time()
 
     for (test_num, (test_input, test_output)) in enumerate(tests):
         output = algorithm(*test_input).run()
+        
+        end = time.time()
+        elapsed = end - start
+        total_time += elapsed
 
         if verbose:
-            print(f"[Test {test_num + 1}] Output: {output}")
+            if output == test_output:
+                print(f"(✓) {test_input[0]}\t{elapsed:.4f}\t\t{output}")
+                passed += 1
+            else:
+                print(
+                    f"(×) {test_input[0]}\t{elapsed:.4f}\t\t{output} (Expected: {test_output})\t")
 
-        assert output == test_output, "Failed Test {}. Expected {}, but got {}.".format(test_num + 1, test_output, output)
-
-    end = time.time()
-    elapsed = end - start
-
-    print('-' * 40 + f"\nRan {len(tests)} tests in {elapsed:.4f}s")
+    print('-' * 50 + f"\nPassed {passed}/{len(tests)} tests in {total_time:.4f}s")
 
 
 if __name__ == "__main__":
     tests = [
         ((1, lambda x: [0, 1][x]), 0),
-        ((1, lambda x: [1, 0][x]), 0),
+        ((1, lambda x: [1, 0][x]), 1),
         ((1, lambda x: 0 ), 1),
         ((1, lambda x: 1 ), 1),
         ((2, lambda x: 1), 1),

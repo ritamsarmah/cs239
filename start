@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-docker run --name cs239 -it -v $(pwd):/src/pyquil/cs239 rigetti/forest ||
-docker start -ia cs239

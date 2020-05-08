@@ -4,39 +4,35 @@ import deutsch_jozsa
 import time
 
 
-def test_algorithm(tests, algorithm, verbose=True):
+def test_algorithm(tests, algorithm):
     start = time.time()
 
     if verbose:
-        print(f"\nRunning tests for {algorithm.__name__}")
-    for (test_num, (test_input, test_output)) in enumerate(tests):
-        if verbose:
-            print(
-                f"----------------------------------------------------------------------\nTest {test_num + 1}: {test_input}")
+        print(f"\nRunning tests for {algorithm.__name__}\n" + '-' * 40)
 
+    for (test_num, (test_input, test_output)) in enumerate(tests):
         output = algorithm(*test_input).run()
 
         if verbose:
-            print(f"Result: {output}")
+            print(f"[Test {test_num + 1}] Output: {output}")
 
-        assert output == test_output, f"Failed Test {test_num + 1}. Expected {test_output}, but got {output}"
+        assert output == test_output, "Failed Test {}. Expected {}, but got {}.".format(test_num + 1, test_output, output)
 
     end = time.time()
     elapsed = end - start
 
-    print(
-        f"----------------------------------------------------------------------\nRan {len(tests)} tests in {elapsed}s\n\nOK")
+    print('-' * 40 + f"\nRan {len(tests)} tests in {elapsed:.4f}s")
 
 
 if __name__ == "__main__":
     tests = [
-        ((1, [0, 0]), 1),
-        ((1, [0, 1]), 0),
-        ((1, [1, 0]), 0),
-        ((1, [1, 1]), 1),
-        ((2, [1, 1, 1, 1]), 1),
-        ((2, [1, 0, 0, 1]), 0),
-        ((3, [1] * (2**3)), 1),
+        ((1, lambda x: [0, 1][x]), 0),
+        ((1, lambda x: [1, 0][x]), 0),
+        ((1, lambda x: 0 ), 1),
+        ((1, lambda x: 1 ), 1),
+        ((2, lambda x: 1), 1),
+        ((2, lambda x: [1, 0, 0, 1][x]), 0),
+        ((3, lambda x: 1), 1),
     ]
 
     test_algorithm(tests, deutsch_jozsa.DeutschJozsa)

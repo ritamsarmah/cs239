@@ -15,10 +15,9 @@ class DeutschJozsa:
     ----------
     n : int
         The length of bit string input to f.
-    f : list
-        A list of length 2^n representing a function: {0,1}^n -> {0,1}.
-        The indices (converted to binary) represent the input strings, and list
-        values represent outputs corresponding to their respective index as input.
+    f : lambda
+        A function that take as input an int in range [0, 2^n]
+        representing binary string {0,1}^n and outputs int {0,1}.
 
     Examples
     ----------
@@ -60,7 +59,7 @@ class DeutschJozsa:
 
         # Apply U_f to all qubits
         p += uf_definition
-        p += U_f(*range(0, self.n+1))
+        p += U_f(*range(0, self.n + 1))
 
         # Apply Hadamard to first n qubits (ignoring helper bit)
         for q in range(self.n):
@@ -70,7 +69,7 @@ class DeutschJozsa:
         for q in range(self.n):
             p += MEASURE(q, ro[q])
 
-        qc = get_qc(f'{self.n+1}q-qvm')  # n bits + 1 helper bit
+        qc = get_qc(f'{self.n + 1}q-qvm')  # n bits + 1 helper bit
         executable = qc.compile(p)
         result = qc.run(executable)
 
@@ -94,10 +93,10 @@ class DeutschJozsa:
 
         # Apply definition of U_f = |x>|b + f(x)> to construct matrix
         # using each input/output pair (x, fx respectively)
-        for (x, fx) in enumerate(self.f):
+        for x in range(2 ** self.n):
             for b in [0, 1]:
                 row = (x << 1) ^ b
-                col = (x << 1) ^ (fx ^ b)
+                col = (x << 1) ^ (self.f(x) ^ b)
                 U_f[row][col] = 1
 
         return DefGate("U_f", U_f)

@@ -50,7 +50,7 @@ class Simon:
         p += [H(q) for q in range(self.n)]
 
         # Apply U_f to all qubits
-        p += self._apply_uf(range(0, self.n * 2))
+        p += self._apply_uf(range(self.n * 2))
 
         # Apply Hadamard to first n qubits (ignoring n helper bits)
         p += [H(q) for q in range(self.n)]

@@ -85,14 +85,15 @@ class Simon:
 
         """
 
-        # Initializes U_f as a 2^(n+1) by 2^(n+1) matrix of zeros
-        U_f = np.zeros((2 ** (self.n + 1),) * 2, dtype=int)
+       # Initializes U_f as a 2^(2n) by 2^(2n) matrix of zeros
+        U_f = np.zeros((2 ** (self.n * 2),) * 2, dtype=int)
 
         # Apply definition of U_f = |x>|b + f(x)> to construct matrix
         for x in range(2 ** self.n):
-            for b in [0, 1]:
-                row = (x << 1) ^ b
-                col = (x << 1) ^ (self.f(x) ^ b)
+            # Number of helper bits is equal to number of qubits
+            for b in range(2 ** self.n):
+                row = (x << self.n) ^ b
+                col = (x << self.n) ^ (self.f(x) ^ b)
                 U_f[row][col] = 1
 
         uf_definition = DefGate("U_f", U_f)

@@ -87,8 +87,8 @@ class DeutschJozsa:
 
         """
 
-        # TODO: Add comment
-        U_f = np.zeros((2 ** (self.n + 1), 2 ** (self.n + 1)), dtype=int)
+        # Initializes U_f as a 2^n x 2^n array of zeros
+        U_f = np.zeros((2 ** (self.n + 1),) * 2, dtype=int)
 
         # Iterate over each input/output pair (x/fx)
         # TODO: Add comment on what this does

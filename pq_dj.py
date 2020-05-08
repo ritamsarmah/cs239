@@ -6,6 +6,7 @@ from pyquil.quil import DefGate
 
 def deutsch_jozsa(f, n):
     p = Program()
+    ro = p.delcare('ro', 'BIT', 2)
 
     # initialize first n qubits to 0, helper qubit to 1
     zeros = [0]*n
@@ -26,10 +27,13 @@ def deutsch_jozsa(f, n):
     for q in range(len(zeros)-1):
         p += H(q)
 
-    with local_forest_runtime():
-        qvm = get_qc(f'{n+1}q-qvm')
-        results = qvm.run_and_measure(p, trials=10)
-        print(results)
+    for q in range(len(zeros)-1):
+        p += MEASURE(q, ro[q])
+
+    qc = get_qc(f'{n+1}q-qvm')
+    executable = qc.compile(p)
+    result = qc.run(executable)
+    print(results)
 
 def Uf_gate(f, n):
     size = 2**(n+1)
@@ -54,7 +58,3 @@ def Uf_gate(f, n):
     Uf = uf_def.get_constructor()
     return uf_def, Uf
 
-def fa(bin):
-    return 1
-
-deutsch_jozsa(fa, 1)

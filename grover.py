@@ -60,9 +60,9 @@ class Grover:
         executable = qc.compile(p)
 
         result = qc.run(executable)
-
-        print(result)
-        # return int(np.count_nonzero(result) == 0)
+        
+        # TODO: Output 1 if it exists??
+        # return int("".join(map(str, result.flatten())), 2)
 
     def _apply_g(self, qubits, k):
         """
@@ -109,13 +109,14 @@ class Grover:
         """
 
         # Initializes Z_f as a 2^n by 2^n matrix of zeros
-        Z_f = np.zeros((2 ** self.n,) * 2, dtype=int)
+        Z_f = np.eye(2 ** self.n, dtype=int)
 
         # Apply definition of Z_f = (-1)^{f(x)}|x> to construct matrix
         for x in range(2 ** self.n):
-            Z_f[x][x] = -1 ** self.f(x)
+            Z_f[x][x] = (-1) ** self.f(x)
 
-        print(Z_f)
+        # Multiply by -1 to account for leading minus in G
+        Z_f *= -1
 
         zf_definition = DefGate("Z_f", Z_f)
         gate = zf_definition.get_constructor()

@@ -32,6 +32,7 @@ def test_algorithm(tests, algorithm, verbose=True):
 
 
 if __name__ == "__main__":
+    # Test case format: ((n, oracle), expected_output)
     tests = [
         ((2, lambda x: [0b11, 0b00, 0b11, 0b00][x]), 0b01)
         # ((3, lambda x: [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111][x]), 0b110)

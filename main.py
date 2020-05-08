@@ -4,7 +4,7 @@ import deutsch_jozsa
 import time
 
 
-def test_algorithm(tests, algorithm):
+def test_algorithm(tests, algorithm, verbose=True):
     start = time.time()
 
     if verbose:

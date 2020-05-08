@@ -9,7 +9,7 @@ from pyquil.quil import DefGate
 
 class DeutschJozsa:
     """
-    The Deutsch Jozsa algorithm.
+    Deutsch Jozsa algorithm.
 
     Parameters
     ----------

@@ -13,8 +13,8 @@ def test_algorithm(tests, algorithm, verbose=True):
     total_time = 0
     
     for (test_num, (test_input, test_output)) in enumerate(tests):
+        start = time.time()
         output = algorithm(*test_input).run()
-        
         end = time.time()
         elapsed = end - start
         total_time += elapsed

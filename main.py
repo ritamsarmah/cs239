@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import deutsch_jozsa
+import simon
 import time
 
 
@@ -33,13 +33,8 @@ def test_algorithm(tests, algorithm, verbose=True):
 
 if __name__ == "__main__":
     tests = [
-        ((1, lambda x: [0, 1][x]), 0),
-        ((1, lambda x: [1, 0][x]), 1),
-        ((1, lambda x: 0 ), 1),
-        ((1, lambda x: 1 ), 1),
-        ((2, lambda x: 1), 1),
-        ((2, lambda x: [1, 0, 0, 1][x]), 0),
-        ((3, lambda x: 1), 1),
+        ((2, lambda x: [0b11, 0b00, 0b11, 0b00][x]), 0b01)
+        # ((3, lambda x: [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111][x]), 0b110)
     ]
 
-    test_algorithm(tests, deutsch_jozsa.DeutschJozsa)
+    test_algorithm(tests, simon.Simon)

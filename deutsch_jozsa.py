@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+
+import numpy as np
+from pyquil import Program
+from pyquil import get_qc
+from pyquil.gates import *
+from pyquil.quil import DefGate
+
+
+class DeutschJozsa:
+    """
+    The Deutsch Jozsa algorithm.
+
+    Parameters
+    ----------
+    n : int
+        The length of bit string input to f.
+    f : list
+        A list of length 2^n representing a function: {0, 1}^n -> {0, 1}.
+        The indices (converted to binary) represent the input strings, and list
+        values are outputs corresponding to their respective index as input.
+
+    Examples
+    ----------
+    ```
+    >>> DeutschJozsa(2, [1, 0, 1, 0]).run()
+    0
+    >>> DeutschJozsa(2, [1, 1, 1, 1]).run()
+    1
+    ```
+    """
+
+    def __init__(self, n, f):
+        self.n = n
+        self.f = f
+
+    def run(self):
+        """
+        Runs Deutsch–Jozsa algorithm.
+
+        Returns
+        -------
+        result : int
+            Returns 1 if self.f is constant or 0 if self.f is balanced.
+
+        """
+        p = Program()
+        ro = p.declare('ro', memory_type='BIT', memory_size=self.n)
+
+        # Initialize helper bit (at index n) to 1
+        p += X(self.n)
+
+        # Apply Hadamard to all qubits
+        for q in range(self.n + 1):
+            p += H(q)
+
+        # Create U_f gate
+        uf_definition = self._define_uf()
+        U_f = uf_definition.get_constructor()
+
+        # Apply U_f to all qubits
+        p += uf_definition
+        p += U_f(*range(0, self.n+1))
+
+        # Apply Hadamard to first n qubits (ignoring helper bit)
+        for q in range(self.n):
+            p += H(q)
+
+        # Measure first n qubits (ignoring helper bit)
+        for q in range(self.n):
+            p += MEASURE(q, ro[q])
+
+        qc = get_qc(f'{self.n+1}q-qvm')  # n bits + 1 helper bit
+        executable = qc.compile(p)
+        result = qc.run(executable)
+
+        return int(np.count_nonzero(result) == 0)
+
+    def _define_uf(self):
+        """
+        Creates a U_f gate that encodes function f.
+
+        Returns
+        -------
+        U_f : DefGate
+            Quil defintion for U_f
+
+        """
+
+        # TODO: Add comment
+        U_f = np.zeros((2 ** (self.n + 1), 2 ** (self.n + 1)), dtype=int)
+
+        # Iterate over each input/output pair (x/fx)
+        # TODO: Add comment on what this does
+        for (x, fx) in enumerate(self.f):
+            # TODO: add detail comment on how this works
+            for b in [0, 1]:
+                row = (x << 1) ^ b
+                col = (x << 1) ^ (fx ^ b)
+                U_f[row][col] = 1
+
+        return DefGate("U_f", U_f)

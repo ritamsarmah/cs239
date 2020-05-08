@@ -16,9 +16,9 @@ class DeutschJozsa:
     n : int
         The length of bit string input to f.
     f : list
-        A list of length 2^n representing a function: {0, 1}^n -> {0, 1}.
+        A list of length 2^n representing a function: {0,1}^n -> {0,1}.
         The indices (converted to binary) represent the input strings, and list
-        values are outputs corresponding to their respective index as input.
+        values represent outputs corresponding to their respective index as input.
 
     Examples
     ----------
@@ -36,7 +36,7 @@ class DeutschJozsa:
 
     def run(self):
         """
-        Runs Deutsch–Jozsa algorithm.
+        Run Deutsch–Jozsa algorithm.
 
         Returns
         -------
@@ -78,22 +78,21 @@ class DeutschJozsa:
 
     def _define_uf(self):
         """
-        Creates a U_f gate that encodes function f.
+        Define a U_f gate that encodes function f.
 
         Returns
         -------
         U_f : DefGate
-            Quil defintion for U_f
+            Quil definition for U_f
 
         """
 
-        # Initializes U_f as a 2^n x 2^n array of zeros
+        # Initializes U_f as a 2^(n+1) by 2^(n+1) matrix of zeros
         U_f = np.zeros((2 ** (self.n + 1),) * 2, dtype=int)
 
-        # Iterate over each input/output pair (x/fx)
-        # TODO: Add comment on what this does
+        # Apply definition of U_f = |x>|b + f(x)> to construct matrix
+        # using each input/output pair (x, fx respectively)
         for (x, fx) in enumerate(self.f):
-            # TODO: add detail comment on how this works
             for b in [0, 1]:
                 row = (x << 1) ^ b
                 col = (x << 1) ^ (fx ^ b)

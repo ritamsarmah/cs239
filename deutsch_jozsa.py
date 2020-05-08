@@ -74,6 +74,8 @@ class DeutschJozsa:
         executable = qc.compile(p)
         result = qc.run(executable)
 
+        # Count number of non-zeros, and if there are none it's constant.
+        # The expression is cast to an int (False = 0 => balanced, True = 1 => constant)
         return int(np.count_nonzero(result) == 0)
 
     def _define_uf(self):

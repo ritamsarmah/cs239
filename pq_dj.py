@@ -8,12 +8,10 @@ def deutsch_jozsa(f, n):
     p = Program()
     ro = p.delcare('ro', 'BIT', 2)
 
-    # initialize first n qubits to 0, helper qubit to 1
-    zeros = [0]*n
-    zeros.append(1)
+    p += X(n)
 
     # apply H to all qubits
-    for q in range(len(zeros)):
+    for q in range(n+1):
         p += H(q)
 
     # create Uf gate
@@ -33,7 +31,7 @@ def deutsch_jozsa(f, n):
     qc = get_qc(f'{n+1}q-qvm')
     executable = qc.compile(p)
     result = qc.run(executable)
-    print(results)
+    return int(np.count_nonzero(result) == 0)
 
 def Uf_gate(f, n):
     size = 2**(n+1)
@@ -57,4 +55,3 @@ def Uf_gate(f, n):
     uf_def = DefGate("Uf", uf)
     Uf = uf_def.get_constructor()
     return uf_def, Uf
-

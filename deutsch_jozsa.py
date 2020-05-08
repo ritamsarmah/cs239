@@ -22,9 +22,9 @@ class DeutschJozsa:
     Examples
     ----------
     ```
-    >>> DeutschJozsa(2, [1, 0, 1, 0]).run()
+    >>> DeutschJozsa(2, lambda x: [1, 0, 1, 0][x]).run()
     0
-    >>> DeutschJozsa(2, [1, 1, 1, 1]).run()
+    >>> DeutschJozsa(2, lambda x: 1).run()
     1
     ```
     """

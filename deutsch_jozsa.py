@@ -33,6 +33,32 @@ class DeutschJozsa:
         self.n = n
         self.f = f
 
+        self.p = None
+        self.uf_definition = None
+        self._construct()
+
+    def _construct(self):
+        """
+        Construct program for Deutsch-Jozsa algorithm.
+        """
+        self.p = Program()
+        ro = self.p.declare('ro', memory_type='BIT', memory_size=self.n)
+
+        # Set helper bit (at index n) to 1
+        self.p += X(self.n)
+
+        # Apply Hadamard to all qubits
+        self.p += [H(q) for q in range(self.n + 1)]
+
+        # Apply U_f to all qubits
+        self.p += self._apply_uf(range(self.n + 1))
+
+        # Apply Hadamard to first n qubits (ignoring helper bit)
+        self.p += [H(q) for q in range(self.n)]
+
+        # Measure first n qubits (ignoring helper bit)
+        self.p += [MEASURE(q, ro[q]) for q in range(self.n)]
+
     def run(self):
         """
         Run Deutsch–Jozsa algorithm.
@@ -43,28 +69,11 @@ class DeutschJozsa:
             Returns 1 if self.f is constant or 0 if self.f is balanced.
 
         """
-        p = Program()
-        ro = p.declare('ro', memory_type='BIT', memory_size=self.n)
-
-        # Set helper bit (at index n) to 1
-        p += X(self.n)
-
-        # Apply Hadamard to all qubits
-        p += [H(q) for q in range(self.n + 1)]
-
-        # Apply U_f to all qubits
-        p += self._apply_uf(range(self.n + 1))
-
-        # Apply Hadamard to first n qubits (ignoring helper bit)
-        p += [H(q) for q in range(self.n)]
-
-        # Measure first n qubits (ignoring helper bit)
-        p += [MEASURE(q, ro[q]) for q in range(self.n)]
-
+        
         # Get a QC with n bits + 1 helper bit
         qc = get_qc(f'{self.n + 1}q-qvm')
         qc.compiler.client.timeout = 1000
-        executable = qc.compile(p)
+        executable = qc.compile(self.p)
 
         result = qc.run(executable)
 
@@ -74,7 +83,7 @@ class DeutschJozsa:
 
     def _apply_uf(self, qubits):
         """
-        Creates a U_f gate that encodes oracle function f and applies it to qubits.
+        Define U_f gate (if not defined) that encodes oracle function f and applies it to qubits.
 
         Parameters
         -------
@@ -83,21 +92,24 @@ class DeutschJozsa:
 
         Returns
         -------
-        [uf_definition, U_f] : [DefGate, Callable]
-            Quil definition for U_f and the gate.
+        U_f : Gate
+            Z_f gate applied to qubits.
 
         """
 
-        # Initializes U_f as a 2^(n+1) by 2^(n+1) matrix of zeros
-        U_f = np.zeros((2 ** (self.n + 1),) * 2, dtype=int)
+        if self.uf_definition is None:
+            # Initializes U_f as a 2^(n+1) by 2^(n+1) matrix of zeros
+            U_f = np.zeros((2 ** (self.n + 1),) * 2, dtype=int)
 
-        # Apply definition of U_f = |x>|b + f(x)> to construct matrix
-        for x in range(2 ** self.n):
-            for b in [0, 1]:
-                row = (x << 1) ^ b
-                col = (x << 1) ^ (self.f(x) ^ b)
-                U_f[row][col] = 1
+            # Apply definition of U_f = |x>|b + f(x)> to construct matrix
+            for x in range(2 ** self.n):
+                for b in [0, 1]:
+                    row = (x << 1) ^ b
+                    col = (x << 1) ^ (self.f(x) ^ b)
+                    U_f[row][col] = 1
 
-        uf_definition = DefGate("U_f", U_f)
-        gate = uf_definition.get_constructor()
-        return [uf_definition, gate(*qubits)]
+            self.uf_definition = DefGate("U_f", U_f)
+            self.p += self.uf_definition
+
+        U_f = self.uf_definition.get_constructor()
+        return U_f(*qubits)

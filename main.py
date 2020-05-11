@@ -34,7 +34,16 @@ def test_algorithm(tests, algorithm, verbose=True):
 
 if __name__ == "__main__":
     tests = [
-        ((2, lambda x: [0, 0, 0, 1][x]), 0b01),
+        ((1, lambda x: x == 0b1), 1),
+        ((2, lambda x: x == 0b10), 1),
+        ((3, lambda x: x == 0b101), 1),
+        ((4, lambda x: x == 0b1101), 1),
+        ((5, lambda x: x == 0b10101), 1),
+        ((1, lambda x: 0), 0),
+        ((2, lambda x: 0), 0),
+        ((3, lambda x: 0), 0),
+        ((4, lambda x: 0), 0),
+        ((5, lambda x: 0), 0)
     ]
 
     test_algorithm(tests, grover.Grover)

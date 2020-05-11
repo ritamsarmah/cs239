@@ -46,27 +46,3 @@ if __name__ == "__main__":
     ]
 
     test_algorithm(simon_tests, simon.Simon)
-
-'''
-finally got good results for this example:
-    [0b000, 0b001, 0b010, 0b011, 0b010, 0b011, 0b000, 0b001], s = 0b110
-
-    - resulting equations are correct.
-    - compile time: 88.390 s
-    - average runtime (per trial) = 2.647 s
-
-example: identity(2)
-    - compile time: 3.037
-    - avg runtime: 0.184
-
-example: identity(3)
-    - compile time: 89.780
-    - avg. runtime: 2.611
-
-example: identity(4)
-    == ran out of heap memory.
-
-
-
-
-'''

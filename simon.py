@@ -7,7 +7,60 @@ from pyquil.gates import *
 from pyquil.quil import DefGate
 from pyquil.api import local_forest_runtime
 import time
-import simon_eqns_solver
+
+
+#-----------------------------------------#
+# Functions for classical piece of Simon
+#-----------------------------------------#
+
+def arr_to_int(arr):
+    res = 0
+    arr = list(arr)
+    arr.reverse()
+    for i in range(len(arr)):
+        res += arr[i]*(2**i)
+    return res
+
+'''
+    check all equations with the target and make sure they're satisfied
+    Inputs:
+        eqns: list of equations of form {0,1}^n
+        tgt: eqn of form {0,1}^n
+'''
+def simon_check_eqns(eqns, tgt):
+    for e in eqns:
+        if np.dot(e, tgt)%2 != 0:
+            return False
+    return True
+
+'''
+    find all possible target equations.
+        just generate all possible lists of 0,1 (of length n)
+'''
+def findall_tgts(n):
+    input_seqs = [[]]
+    #generation process: in a loop, take all outputs of prev loop and add "output + '0'", "output+'1'"
+    # to the set of new outputs. Do this repeatedly until we have all 2^n strings of length n.
+    for i in range(n):
+        new_arrs = []
+        for seq in input_seqs:
+            new_arrs.append(seq + [0])
+            new_arrs.append(seq + [1])
+        input_seqs = new_arrs
+    return input_seqs
+
+# eqns is a nparray with all equations
+def simon_eqns_solver(eqns, n):
+    tgts = findall_tgts(n)
+    for t in tgts[1:]:
+        r = simon_check_eqns(eqns, t)
+        if r:
+            return arr_to_int(t)
+    return arr_to_int([0, 0, 0])
+
+#-----------------------------------------#
+# Class for implementing (quantum) Simon
+#-----------------------------------------#
 
 class Simon:
     """
@@ -63,7 +116,7 @@ class Simon:
         p += [MEASURE(q, ro[q]) for q in range(self.n)]
 
         # Run n - 1 times to collect equations
-        num_runs = 4*(self.n - 1)
+        num_runs = 4*(self.n - 1)+1
         p.wrap_in_numshots_loop(num_runs)
 
 
@@ -83,7 +136,7 @@ class Simon:
         #print(f"computation finished! avg runtime ={run_time}")
         #print(result)
 
-        soln = simon_eqns_solver.simon_eqns_solver(result, self.n)
+        soln = simon_eqns_solver(result, self.n)
         #print(f"\nFinal Solution: {soln}")
 
         print(f"\t*** compilation time: {cpl_time}, avg trial runtime: {run_time}")

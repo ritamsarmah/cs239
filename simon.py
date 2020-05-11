@@ -5,7 +5,9 @@ from pyquil import Program
 from pyquil import get_qc
 from pyquil.gates import *
 from pyquil.quil import DefGate
-
+from pyquil.api import local_forest_runtime
+import time
+import simon_eqns_solver
 
 class Simon:
     """
@@ -43,6 +45,8 @@ class Simon:
             for all x, y: [f(x) = f(y)] iff [(x + y) in {0^n, s}]
 
         """
+
+        ### first, build the simon circuit.
         p = Program()
         ro = p.declare('ro', memory_type='BIT', memory_size=self.n)
 
@@ -59,15 +63,31 @@ class Simon:
         p += [MEASURE(q, ro[q]) for q in range(self.n)]
 
         # Run n - 1 times to collect equations
-        p.wrap_in_numshots_loop(self.n - 1)
+        num_runs = 4*(self.n - 1)
+        p.wrap_in_numshots_loop(num_runs)
 
+
+        ### now, run it...
+        #with local_forest_runtime():
         qc = get_qc(f'{self.n * 2}q-qvm')  # n bits + n helper bits
         qc.compiler.client.timeout = 1000
-        executable = qc.compile(p)
-        result = qc.run(executable)
 
-        print(result)
-        return np.linalg.solve(result, np.zeros(self.n - 1))
+        t1 = time.time()
+        executable = qc.compile(p)
+        cpl_time = time.time()-t1
+        #print(f"exe created! compile time = {cpl_time}")
+
+        t1 = time.time()
+        result = qc.run(executable)
+        run_time = (time.time()-t1) / num_runs
+        #print(f"computation finished! avg runtime ={run_time}")
+        #print(result)
+
+        soln = simon_eqns_solver.simon_eqns_solver(result, self.n)
+        #print(f"\nFinal Solution: {soln}")
+
+        print(f"\t*** compilation time: {cpl_time}, avg trial runtime: {run_time}")
+        return soln
 
     def _apply_uf(self, qubits):
         """

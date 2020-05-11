@@ -26,8 +26,10 @@ class Grover:
     Examples
     ----------
     ```
-    TODO: Add example
-    >>> Grover(...).run()
+    >>> Grover(2, lambda x: 0).run()
+    0
+    >>> Grover(2, lambda x: x == 0b10).run()
+    1
     ```
     """
 
@@ -41,6 +43,25 @@ class Grover:
         self.zf_definition = None
         self.z0_definition = None
         self._construct()
+
+    def _construct(self):
+        """
+        Construct program for Grover's algorithm.
+        """
+        self.p = Program()
+        ro = self.p.declare('ro', memory_type='BIT', memory_size=self.n)
+
+        # Apply Hadamard to all qubits
+        self.p += [H(q) for q in range(self.n)]
+
+        # Calculate number of times to apply G to qubits
+        k = int(np.floor(np.pi / 4 * np.sqrt(2 ** self.n)))
+
+        # Apply G to all qubits
+        self.p += self._apply_g(range(self.n), k)
+
+        # Measure all qubits
+        self.p += [MEASURE(q, ro[q]) for q in range(self.n)]
 
     def run(self):
         """
@@ -72,25 +93,6 @@ class Grover:
             return self.run()
         else:
             return 0
-
-    def _construct(self):
-        """
-        Construct program for Grover's algorithm.
-        """
-        self.p = Program()
-        ro = self.p.declare('ro', memory_type='BIT', memory_size=self.n)
-
-        # Apply Hadamard to all qubits
-        self.p += [H(q) for q in range(self.n)]
-
-        # Calculate number of times to apply G to qubits
-        k = int(np.floor(np.pi / 4 * np.sqrt(2 ** self.n)))
-
-        # Apply G to all qubits
-        self.p += self._apply_g(range(self.n), k)
-
-        # Measure all qubits
-        self.p += [MEASURE(q, ro[q]) for q in range(self.n)]
 
     def _apply_g(self, qubits, k):
         """

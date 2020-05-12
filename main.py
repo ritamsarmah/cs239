@@ -37,12 +37,7 @@ if __name__ == "__main__":
         ((2, lambda x: x % 2), 0),
         ((3, lambda x: x % 2), 0),
         ((4, lambda x: x % 2), 0),
-        ((5, lambda x: x % 2), 0),
-        ((1, lambda x: 1), 1),
-        ((2, lambda x: 1), 1),
-        ((3, lambda x: 1), 1),
-        ((4, lambda x: 1), 1),
-        ((5, lambda x: 1), 1),
+        ((5, lambda x: x % 2), 0)
     ]
 
     test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa)

@@ -63,6 +63,11 @@ class Grover:
         # Measure all qubits
         self.p += [MEASURE(q, ro[q]) for q in range(self.n)]
 
+        # Get a QC with n bits
+        self.qc = get_qc(f'{self.n}q-qvm')
+        self.qc.compiler.client.timeout = 1000
+        self.executable = self.qc.compile(self.p)
+
     def run(self):
         """
         Run Grover's algorithm.
@@ -73,13 +78,7 @@ class Grover:
             Returns 1 if self.f is constant or 0 if self.f is balanced.
 
         """
-
-        # Get a QC with n bits
-        qc = get_qc(f'{self.n}q-qvm')
-        qc.compiler.client.timeout = 1000
-        executable = qc.compile(self.p)
-
-        result = qc.run(executable)
+        result = self.qc.run(self.executable)
 
         # Convert measurement to bits
         x = int("".join(map(str, result.flatten())), 2)

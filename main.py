@@ -11,12 +11,11 @@ def test_algorithm(tests, algorithm, verbose=True):
 
     passed = 0
     total_time = 0
-    for (test_input, test_output) in tests:
-        start = time.time()
 
     for (test_num, (test_input, test_output)) in enumerate(tests):
-        output = algorithm(*test_input).run()
-        
+        instance = algorithm(*test_input)
+        start = time.time()
+        output = instance.run()
         end = time.time()
         elapsed = end - start
         total_time += elapsed
@@ -33,7 +32,7 @@ def test_algorithm(tests, algorithm, verbose=True):
 
 
 if __name__ == "__main__":
-    tests = [
+    grover_tests = [
         ((1, lambda x: x == 0b1), 1),
         ((2, lambda x: x == 0b10), 1),
         ((3, lambda x: x == 0b101), 1),
@@ -46,4 +45,4 @@ if __name__ == "__main__":
         ((5, lambda x: 0), 0)
     ]
 
-    test_algorithm(tests, grover.Grover)
+    test_algorithm(grover_tests, grover.Grover)

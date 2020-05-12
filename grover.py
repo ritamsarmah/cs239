@@ -75,7 +75,7 @@ class Grover:
         Returns
         -------
         result : int
-            Returns 1 if self.f is constant or 0 if self.f is balanced.
+            Return 1 if there exists x in [0,1] such that f(x) = 1, and 0 otherwise.
 
         """
         result = self.qc.run(self.executable)

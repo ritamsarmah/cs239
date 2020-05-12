@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import deutsch_jozsa
 import grover
 import time
 
@@ -46,3 +47,13 @@ if __name__ == "__main__":
     ]
 
     test_algorithm(grover_tests, grover.Grover)
+
+    dj_tests = [
+        ((1, lambda x: x % 2), 0),
+        ((2, lambda x: x % 2), 0),
+        ((3, lambda x: x % 2), 0),
+        ((4, lambda x: x % 2), 0),
+        ((5, lambda x: x % 2), 0)
+    ]
+
+    test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa)

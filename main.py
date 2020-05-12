@@ -11,11 +11,11 @@ def test_algorithm(tests, algorithm, verbose=True):
 
     passed = 0
     total_time = 0
-    for (test_input, test_output) in tests:
+    
+    for (test_num, (test_input, test_output)) in enumerate(tests):
+        instance = algorithm(*test_input)
         start = time.time()
-
-        output = algorithm(*test_input).run()
-        
+        output = instance.run()
         end = time.time()
         elapsed = end - start
         total_time += elapsed
@@ -32,15 +32,12 @@ def test_algorithm(tests, algorithm, verbose=True):
 
 
 if __name__ == "__main__":
-    # Test case format: ((n, oracle), expected_output)
-    tests = [
-        ((1, lambda x: [0, 1][x]), 0),
-        ((1, lambda x: [1, 0][x]), 0),
-        ((1, lambda x: 0), 1),
-        ((1, lambda x: 1), 1),
-        ((2, lambda x: 1), 1),
-        ((2, lambda x: [1, 0, 0, 1][x]), 0),
-        ((3, lambda x: 1), 1),
+    dj_tests = [
+        ((1, lambda x: x % 2), 0),
+        ((2, lambda x: x % 2), 0),
+        ((3, lambda x: x % 2), 0),
+        ((4, lambda x: x % 2), 0),
+        ((5, lambda x: x % 2), 0)
     ]
 
-    test_algorithm(tests, deutsch_jozsa.DeutschJozsa)
+    test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa)

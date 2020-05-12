@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+
+import simon
 import deutsch_jozsa
 import grover
 import time
@@ -33,6 +35,21 @@ def test_algorithm(tests, algorithm, verbose=True):
 
 
 if __name__ == "__main__":
+    # Test case format: ((n, oracle), expected_output)
+    simon_tests = [
+        ((1, lambda x: [0b0, 0b1][x]), 0b0),
+        ((2, lambda x: [0b11, 0b00, 0b11, 0b00][x]), 0b10),
+        ((2, lambda x: [0b10, 0b01, 0b01, 0b10][x]), 0b11)
+        #((2, lambda x: [0b00, 0b01, 0b10, 0b11][x]), 0b00),
+        #((3, lambda x: [0b000, 0b001, 0b010, 0b011, 0b010, 0b011, 0b000, 0b001][x]), 0b110),
+        #((3, lambda x: [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111][x]), 0b000)
+        # (this test crashes everything.)
+        #((4, lambda x: [0b0000, 0b0001, 0b0010, 0b0011, 0b0100, 0b0101, 0b0110, 0b0111, 0b1000, 0b1001, 0b1010, 0b1011, 0b1100, 0b1101, 0b1110, 0b1111][x]), 0b000)
+
+    ]
+
+    test_algorithm(simon_tests, simon.Simon)
+
     grover_tests = [
         ((1, lambda x: x == 0b1), 1),
         ((2, lambda x: x == 0b10), 1),

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+
 import simon
+import deutsch_jozsa
+import grover
 import time
 
 
@@ -11,11 +14,11 @@ def test_algorithm(tests, algorithm, verbose=True):
 
     passed = 0
     total_time = 0
-    for (test_input, test_output) in tests:
+
+    for (test_num, (test_input, test_output)) in enumerate(tests):
+        instance = algorithm(*test_input)
         start = time.time()
-
-        output = algorithm(*test_input).run()
-
+        output = instance.run()
         end = time.time()
         elapsed = end - start
         total_time += elapsed
@@ -46,3 +49,28 @@ if __name__ == "__main__":
     ]
 
     test_algorithm(simon_tests, simon.Simon)
+
+    grover_tests = [
+        ((1, lambda x: x == 0b1), 1),
+        ((2, lambda x: x == 0b10), 1),
+        ((3, lambda x: x == 0b101), 1),
+        ((4, lambda x: x == 0b1101), 1),
+        ((5, lambda x: x == 0b10101), 1),
+        ((1, lambda x: 0), 0),
+        ((2, lambda x: 0), 0),
+        ((3, lambda x: 0), 0),
+        ((4, lambda x: 0), 0),
+        ((5, lambda x: 0), 0)
+    ]
+
+    test_algorithm(grover_tests, grover.Grover)
+
+    dj_tests = [
+        ((1, lambda x: x % 2), 0),
+        ((2, lambda x: x % 2), 0),
+        ((3, lambda x: x % 2), 0),
+        ((4, lambda x: x % 2), 0),
+        ((5, lambda x: x % 2), 0)
+    ]
+
+    test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa)

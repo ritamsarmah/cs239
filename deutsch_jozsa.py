@@ -33,7 +33,6 @@ class DeutschJozsa:
         self.n = n
         self.f = f
 
-        self.p = None
         self.uf_definition = None
         self._construct()
 
@@ -59,6 +58,11 @@ class DeutschJozsa:
         # Measure first n qubits (ignoring helper bit)
         self.p += [MEASURE(q, ro[q]) for q in range(self.n)]
 
+        # Get a QC with n bits + 1 helper bit
+        self.qc = get_qc(f'{self.n + 1}q-qvm')
+        self.qc.compiler.client.timeout = 1000
+        self.executable = self.qc.compile(self.p)
+
     def run(self):
         """
         Run Deutsch–Jozsa algorithm.
@@ -70,12 +74,7 @@ class DeutschJozsa:
 
         """
         
-        # Get a QC with n bits + 1 helper bit
-        qc = get_qc(f'{self.n + 1}q-qvm')
-        qc.compiler.client.timeout = 1000
-        executable = qc.compile(self.p)
-
-        result = qc.run(executable)
+        result = self.qc.run(self.executable)
 
         # Count number of non-zeros, and if there are none it's constant.
         # The expression is cast to an int (False = 0 => balanced, True = 1 => constant)

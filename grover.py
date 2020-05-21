@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from pyquil import Progra
 from qiskit import *
 from qiskit.quantum_info.operators import Operator
 
@@ -79,9 +78,7 @@ class Grover:
         counts = result.get_counts(self.circuit)
         measurement = list(counts.keys())[0]
 
-        # Convert measurement to bits
-        print(measurement)
-        # x = int("".join(map(str, result.flatten())), 2)
+        x = int(measurement[::-1], 2)
 
         # Verify output on oracle, if f(x) == 1, we're done
         # Else we re-run if we've got more iterations left

@@ -60,15 +60,15 @@ if __name__ == "__main__":
     #  test_algorithm(simon_tests, simon.Simon)
 
     grover_tests = [
-        ((1, lambda x: x == 0b1), 1),
+        ((1, lambda x: int(x == 0b1)), 1),
         ((1, lambda x: 0), 0),
-        ((2, lambda x: x == 0b10), 1),
+        ((2, lambda x: int(x == 0b10)), 1),
         ((2, lambda x: 0), 0),
-        ((3, lambda x: x == 0b101), 1),
+        ((3, lambda x: int(x == 0b101)), 1),
         ((3, lambda x: 0), 0),
-        ((4, lambda x: x == 0b1101), 1),
+        ((4, lambda x: int(x == 0b1101)), 1),
         ((4, lambda x: 0), 0),
-        ((5, lambda x: x == 0b10101), 1),
+        ((5, lambda x: int(x == 0b10101)), 1),
         ((5, lambda x: 0), 0)
     ]
 

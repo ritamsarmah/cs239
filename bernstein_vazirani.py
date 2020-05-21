@@ -38,9 +38,9 @@ class BernsteinVazirani:
         self.f = f
         self.uf = None
 
-        self._construct()
+        self.__construct()
 
-    def _construct(self):
+    def __construct(self):
         """
         Construct program for B-V algorithm.
         """

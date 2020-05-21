@@ -111,6 +111,6 @@ class BernsteinVazirani:
                     col = (x << 1) ^ (self.f(x) ^ b)
                     U_f[row][col] = 1
             
-            self.uf = Operator(U_f.T)
+            self.uf = Operator(U_f)
 
         self.circuit.unitary(self.uf, qubits[::-1], label='u_f')

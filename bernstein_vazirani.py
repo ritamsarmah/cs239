@@ -71,8 +71,8 @@ class BernsteinVazirani:
 
         Returns
         -------
-        result : int
-            Returns int, equivalent to bitstring a.
+        result : (int, int)
+            Returns tuple of ints, equivalent to bit strings a and b.
 
         """
         simulator = Aer.get_backend('qasm_simulator')

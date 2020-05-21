@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from qiskit import *
-from qiskit.quantum_info.operators import Operator
+from pyquil import Program
+from pyquil import get_qc
+from pyquil.gates import *
+from pyquil.quil import DefGate
+
 
 class BernsteinVazirani:
     """
@@ -36,34 +39,46 @@ class BernsteinVazirani:
     def __init__(self, n, f):
         self.n = n
         self.f = f
-        self.uf = None
 
+        self.p = None
+        self.uf_definition = None
         self._construct()
 
     def _construct(self):
         """
         Construct program for B-V algorithm.
         """
-        # Create a Quantum circuit with n+1 qubits and n classical bits for measurement
-        self.circuit = QuantumCircuit(self.n + 1, self.n)
+        self.p = Program()
+        ro = self.p.declare('ro', memory_type='BIT', memory_size=self.n)
 
         # Set helper bit (at index n) to 1
-        self.circuit.x(self.n)
+        self.p += X(self.n)
 
         # Apply Hadamard to all qubits
-        for q in range(self.n + 1):
-            self.circuit.h(q)
+        self.p += [H(q) for q in range(self.n + 1)]
 
         # Apply U_f to all qubits
-        self.__apply_uf(list(range(self.n + 1)))
+        self.p += self._apply_uf(range(self.n + 1))
 
         # Apply Hadamard to first n qubits (ignoring helper bit)
-        for q in range(self.n):
-            self.circuit.h(q)
+        self.p += [H(q) for q in range(self.n)]
 
         # Measure first n qubits (ignoring helper bit)
-        for q in range(self.n):
-            self.circuit.measure(q, q)
+        self.p += [MEASURE(q, ro[q]) for q in range(self.n)]
+
+        # Get a QC with n bits + 1 helper bit
+        self.qc = get_qc(f'{self.n + 1}q-qvm')
+        self.qc.compiler.client.timeout = 1000
+        self.executable = self.qc.compile(self.p)
+
+    #given the result, combine the measurements into the int a
+    def _extract_a(self, res):
+        r = list(res[0])
+        r.reverse()
+        a = 0
+        for i in range(len(r)):
+            a += (2**i)*r[i]
+        return a
 
     def run(self):
         """
@@ -73,23 +88,16 @@ class BernsteinVazirani:
         -------
         result : int
             Returns int, equivalent to bitstring a.
-
         """
-        simulator = Aer.get_backend('qasm_simulator')
-        job = execute(self.circuit, simulator, shots=1)
-        result = job.result()
-        counts = result.get_counts(self.circuit)
-        measurement = list(counts.keys())[0]
 
-        # Get a by converting measurement to integer
-        a = int(measurement[::-1], 2)
+        result = self.qc.run(self.executable)
 
-        # Get b by calling function
+        a = self._extract_a(result)
         b = self.f(0)
 
         return (a, b)
 
-    def __apply_uf(self, qubits):
+    def _apply_uf(self, qubits):
         """
         Define U_f gate (if not defined) that encodes oracle function f and applies it to qubits.
 
@@ -98,9 +106,13 @@ class BernsteinVazirani:
         qubits : [int]
             Qubits to apply U_f to.
 
+        Returns
+        -------
+        U_f : Gate
+            U_f gate applied to qubits.
         """
 
-        if self.uf is None:
+        if self.uf_definition is None:
             # Initializes U_f as a 2^(n+1) by 2^(n+1) matrix of zeros
             U_f = np.zeros((2 ** (self.n + 1),) * 2, dtype=int)
 
@@ -110,7 +122,9 @@ class BernsteinVazirani:
                     row = (x << 1) ^ b
                     col = (x << 1) ^ (self.f(x) ^ b)
                     U_f[row][col] = 1
-            
-            self.uf = Operator(U_f.T)
 
-        self.circuit.unitary(self.uf, qubits[::-1], label='u_f')
+            self.uf_definition = DefGate("U_f", U_f)
+            self.p += self.uf_definition
+
+        U_f = self.uf_definition.get_constructor()
+        return U_f(*qubits)

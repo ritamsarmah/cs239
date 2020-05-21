@@ -2,9 +2,9 @@
 
 
 import bernstein_vazirani
-import deutsch_jozsa
-import grover
-import simon
+#  import deutsch_jozsa
+# import grover
+# import simon
 import time
 
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         #((4, lambda x: [0b0000, 0b0001, 0b0010, 0b0011, 0b0100, 0b0101, 0b0110, 0b0111, 0b1000, 0b1001, 0b1010, 0b1011, 0b1100, 0b1101, 0b1110, 0b1111][x]), 0b000)
     ]
 
-    test_algorithm(simon_tests, simon.Simon)
+    # test_algorithm(simon_tests, simon.Simon)
 
     grover_tests = [
         ((1, lambda x: x == 0b1), 1),
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         ((5, lambda x: 0), 0)
     ]
 
-    test_algorithm(grover_tests, grover.Grover)
+    # test_algorithm(grover_tests, grover.Grover)
 
     dj_tests = [
         ((1, lambda x: x % 2), 0),
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         ((5, lambda x: 0), 1)
     ]
 
-    test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa)
+    #  test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa)
 
     bv_tests = [
         # output format: ("a", "b")

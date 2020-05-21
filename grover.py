@@ -46,7 +46,7 @@ class Grover:
         Construct program for Grover's algorithm.
         """
         # Create a Quantum circuit with n qubits and n classical bits for measurement
-        self.circuit = QuantumCircuit(self.n + 1, self.n)
+        self.circuit = QuantumCircuit(self.n, self.n)
 
         # Apply Hadamard to all qubits
         for q in range(self.n):
@@ -78,6 +78,7 @@ class Grover:
         counts = result.get_counts(self.circuit)
         measurement = list(counts.keys())[0]
 
+        # Convert measurement into int input for f
         x = int(measurement[::-1], 2)
 
         # Verify output on oracle, if f(x) == 1, we're done

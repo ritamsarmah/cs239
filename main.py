@@ -10,7 +10,7 @@ import time
 
 def test_algorithm(tests, algorithm, verbose=True):
     if verbose:
-        print(f"\nRunning tests for {algorithm.__name__}\n" + '-' * 70)
+        print(f"\nTests for {algorithm.__name__}\n" + '-' * 70)
         print("n\ttotal (s)\tcompile (s)\truntime (s)\toutput\n" + '-' * 70)
 
     passed = 0

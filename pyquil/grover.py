@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from qiskit import *
-from qiskit.quantum_info.operators import Operator
+from pyquil import Program
+from pyquil import get_qc
+from pyquil.gates import *
+from pyquil.quil import DefGate
 
 
 class Grover:
@@ -37,30 +39,34 @@ class Grover:
         self.iteration = 0
         self.max_iterations = max_iterations
 
-        self.zf = None
-        self.z0 = None
-        self.__construct()
+        self.p = None
+        self.zf_definition = None
+        self.z0_definition = None
+        self._construct()
 
-    def __construct(self):
+    def _construct(self):
         """
         Construct program for Grover's algorithm.
         """
-        # Create a Quantum circuit with n qubits and n classical bits for measurement
-        self.circuit = QuantumCircuit(self.n, self.n)
+        self.p = Program()
+        ro = self.p.declare('ro', memory_type='BIT', memory_size=self.n)
 
         # Apply Hadamard to all qubits
-        for q in range(self.n):
-            self.circuit.h(q)
+        self.p += [H(q) for q in range(self.n)]
 
         # Calculate number of times to apply G to qubits
         k = int(np.floor(np.pi / 4 * np.sqrt(2 ** self.n)))
 
         # Apply G to all qubits
-        self.__apply_g(list(range(self.n)), k)
+        self.p += self._apply_g(range(self.n), k)
 
         # Measure all qubits
-        for q in range(self.n):
-            self.circuit.measure(q, q)
+        self.p += [MEASURE(q, ro[q]) for q in range(self.n)]
+
+        # Get a QC with n bits
+        self.qc = get_qc(f'{self.n}q-qvm')
+        self.qc.compiler.client.timeout = 1000
+        self.executable = self.qc.compile(self.p)
 
     def run(self):
         """
@@ -72,14 +78,10 @@ class Grover:
             Return 1 if there exists x in [0,1] such that f(x) = 1, and 0 otherwise.
 
         """
-        simulator = Aer.get_backend('qasm_simulator')
-        job = execute(self.circuit, simulator, shots=1)
-        result = job.result()
-        counts = result.get_counts(self.circuit)
-        measurement = list(counts.keys())[0]
+        result = self.qc.run(self.executable)
 
-        # Convert measurement into int input for f
-        x = int(measurement[::-1], 2)
+        # Convert measurement to bits
+        x = int("".join(map(str, result.flatten())), 2)
 
         # Verify output on oracle, if f(x) == 1, we're done
         # Else we re-run if we've got more iterations left
@@ -91,7 +93,7 @@ class Grover:
         else:
             return 0
 
-    def __apply_g(self, qubits, k):
+    def _apply_g(self, qubits, k):
         """
         Applies G = -H × Z_0 × H × Z_f to qubits with k repetitions
 
@@ -103,20 +105,23 @@ class Grover:
         k : int
             Number of times to apply G to qubits.
 
+        Returns
+        ----------
+        G : list
+            List of all applications of matrix G to qubits.
         """
+        G = []
+
         # Apply G to qubits k times
         for _ in range(k):
-            self.__apply_zf(qubits)
+            G += [self._apply_zf(qubits)]
+            G += [H(q) for q in qubits]
+            G += [self._apply_z0(qubits)]
+            G += [H(q) for q in qubits]
 
-            for q in qubits:
-                self.circuit.h(q)
+        return G
 
-            self.__apply_z0(qubits)
-
-            for q in qubits:
-                self.circuit.h(q)
-
-    def __apply_zf(self, qubits):
+    def _apply_zf(self, qubits):
         """
         Define Z_f gate (if not defined) and applies it to qubits.
 
@@ -125,9 +130,14 @@ class Grover:
         qubits : [int]
             Qubits to apply Z_f to.
 
+        Returns
+        ----------
+        Z_f : Gate
+            Z_f gate applied to qubits
+
         """
 
-        if self.zf is None:
+        if self.zf_definition is None:
             # Initializes Z_f as a 2^n by 2^n matrix of zeros
             Z_f = np.eye(2 ** self.n, dtype=int)
 
@@ -138,11 +148,13 @@ class Grover:
             # Multiply by -1 to account for leading minus in G
             Z_f *= -1
 
-            self.zf = Operator(Z_f)
+            self.zf_definition = DefGate("Z_f", Z_f)
+            self.p += self.zf_definition
 
-        self.circuit.unitary(self.zf, qubits[::-1], label='z_f')
+        Z_f = self.zf_definition.get_constructor()
+        return Z_f(*qubits)
 
-    def __apply_z0(self, qubits):
+    def _apply_z0(self, qubits):
         """
         Defines Z_0 gate (if not defined) and applies it to qubits.
 
@@ -151,12 +163,20 @@ class Grover:
         qubits : [int]
             Qubits to apply Z_0 to.
 
+        Returns
+        ----------
+        Z_0 : Gate
+            Z_0 gate applied to qubits
+
         """
 
-        if self.z0 is None:
+        if self.z0_definition is None:
             # Create Z_0 as identity, except with -1 in top-left corner
             Z_0 = np.eye(2 ** self.n)
             Z_0[0][0] = -1
-            self.z0 = Operator(Z_0)
 
-        self.circuit.unitary(self.z0, qubits[::-1], label='z_0')
+            self.z0_definition = DefGate("Z_0", Z_0)
+            self.p += self.z0_definition
+
+        Z_0 = self.z0_definition.get_constructor()
+        return Z_0(*qubits)

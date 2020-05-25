@@ -102,4 +102,4 @@ class DeutschJozsa:
             
             self.uf = Operator(U_f)
 
-        self.circuit.unitary(self.uf, qubits[::-1], label='u_f')
+        self.circuit.append(self.uf, qubits[::-1])

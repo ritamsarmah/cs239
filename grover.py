@@ -140,7 +140,7 @@ class Grover:
 
             self.zf = Operator(Z_f)
 
-        self.circuit.unitary(self.zf, qubits[::-1], label='z_f')
+        self.circuit.append(self.zf, qubits[::-1])
 
     def __apply_z0(self, qubits):
         """
@@ -159,4 +159,4 @@ class Grover:
             Z_0[0][0] = -1
             self.z0 = Operator(Z_0)
 
-        self.circuit.unitary(self.z0, qubits[::-1], label='z_0')
+        self.circuit.append(self.z0, qubits[::-1])

@@ -3,6 +3,8 @@
 import numpy as np
 from qiskit import *
 from qiskit.quantum_info.operators import Operator
+from qiskit import IBMQ
+
 
 class BernsteinVazirani:
     """
@@ -33,10 +35,11 @@ class BernsteinVazirani:
     ```
     """
 
-    def __init__(self, n, f):
+    def __init__(self, n, f, provider):
         self.n = n
         self.f = f
         self.uf = None
+        self.provider = provider
 
         self.__construct()
 
@@ -75,8 +78,8 @@ class BernsteinVazirani:
             Returns tuple of ints, equivalent to bit strings a and b.
 
         """
-        simulator = Aer.get_backend('qasm_simulator')
-        job = execute(self.circuit, simulator, shots=1)
+        backend = self.provider.get_backend('ibmq_qasm_simulator')
+        job = execute(self.circuit, backend, shots=1)
         result = job.result()
         counts = result.get_counts(self.circuit)
         measurement = list(counts.keys())[0]

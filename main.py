@@ -7,10 +7,12 @@ import grover
 import simon
 import time
 
+from qiskit import IBMQ
+from qiskit.providers.ibmq import least_busy
 
-def test_algorithm(tests, algorithm, verbose=True):
+def test_algorithm(tests, algorithm, backend, verbose=True):
     if verbose:
-        print(f"\nTests for {algorithm.__name__}\n" + '-' * 70)
+        print(f"\n{algorithm.__name__} Tests\n" + '-' * 70)
         print("n\ttotal (s)\tcompile (s)\truntime (s)\toutput\n" + '-' * 70)
 
     passed = 0
@@ -19,15 +21,12 @@ def test_algorithm(tests, algorithm, verbose=True):
 
     for (test_num, (test_input, test_output)) in enumerate(tests):
         start_compile = time.time()
-        instance = algorithm(*test_input)
+        instance = algorithm(*test_input, backend)
         end_compile = time.time()
         elapsed_compile = end_compile - start_compile
         total_compile_time += elapsed_compile
 
-        start_run = time.time()
-        output = instance.run()
-        end_run = time.time()
-        elapsed_run = end_run - start_run
+        output, elapsed_run = instance.run()
         total_run_time += elapsed_run
 
         if verbose:
@@ -44,6 +43,12 @@ def test_algorithm(tests, algorithm, verbose=True):
 
 
 if __name__ == "__main__":
+    # Load least busy backend and use the same QC to run all tests
+    provider = IBMQ.enable_account('58b3caece224fe45e9eebe211808f050207d41998913468ea773c2024c5cb8ea278daae70e9a8d0a0656f205a198109aff811c48ceb6f38e217e2c29ce831fd3')
+    small_devices = provider.backends(filters=lambda x: x.configuration().n_qubits == 5 and not x.configuration().simulator)
+    backend = least_busy(small_devices)
+    print(f"Using backend: {backend}")
+
     # Test case format: ((n, oracle), expected_output)
 
     #function design: given x and s, deduce y s.t. x+y=s. Return min(x, y)
@@ -69,7 +74,7 @@ if __name__ == "__main__":
         ((6, lambda x: simon_fn(x, 0b110000)), 0b110000)
     ]
 
-    test_algorithm(simon_tests, simon.Simon)
+    test_algorithm(simon_tests, simon.Simon, backend)
 
     grover_tests = [
         ((1, lambda x: int(x == 0b1)), 1),
@@ -96,7 +101,7 @@ if __name__ == "__main__":
         ((10, lambda x: int(x == 0b1)), 1)
     ]
 
-    test_algorithm(grover_tests, grover.Grover)
+    #  test_algorithm(grover_tests, grover.Grover, backend)
 
     dj_tests = [
         ((1, lambda x: x % 2), 0),
@@ -124,7 +129,7 @@ if __name__ == "__main__":
         ((11, lambda x: 0), 1)
     ]
 
-    test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa)
+    test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa, backend)
 
 
     #take integers as input, treat as binary strings and multiply
@@ -165,4 +170,4 @@ if __name__ == "__main__":
         #((12, lambda x: mult_bstrings(0b1101 << 7, x)), (0b1101 << 8, 0))
     ]
 
-    test_algorithm(bv_tests, bernstein_vazirani.BernsteinVazirani)
+    test_algorithm(bv_tests, bernstein_vazirani.BernsteinVazirani, backend)

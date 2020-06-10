@@ -3,6 +3,8 @@
 import numpy as np
 from qiskit import *
 from qiskit.quantum_info.operators import Operator
+from qiskit import IBMQ
+
 
 '''
 Simon Circuit:
@@ -74,10 +76,11 @@ class Simon:
     ```
     """
 
-    def __init__(self, n, f):
+    def __init__(self, n, f, provider):
         self.n = n
         self.f = f
         self.uf = None
+        self.provider = provider
 
         self.__construct()
 
@@ -113,9 +116,9 @@ class Simon:
             Return a single int, "s"
 
         """
-        simulator = Aer.get_backend('qasm_simulator')
-        numshots = 4*self.n #4*(self.n - 1)
-        job = execute(self.circuit, simulator, shots=numshots)
+        backend = self.provider.get_backend('ibmq_qasm_simulator')
+        numshots = 4 * self.n
+        job = execute(self.circuit, backend, shots=numshots)
         result = job.result()
         counts = result.get_counts(self.circuit)
 

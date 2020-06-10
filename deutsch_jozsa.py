@@ -3,6 +3,8 @@
 import numpy as np
 from qiskit import *
 from qiskit.quantum_info.operators import Operator
+from qiskit import IBMQ
+
 
 class DeutschJozsa:
     """
@@ -26,10 +28,11 @@ class DeutschJozsa:
     ```
     """
 
-    def __init__(self, n, f):
+    def __init__(self, n, f, backend):
         self.n = n
         self.f = f
         self.uf = None
+        self.backend = backend
 
         self.__construct()
 
@@ -68,15 +71,14 @@ class DeutschJozsa:
             Returns tuple of ints, equivalent to bit strings a and b.
 
         """
-        simulator = Aer.get_backend('qasm_simulator')
-        job = execute(self.circuit, simulator, shots=1)
+        job = execute(self.circuit, self.backend, shots=10)
         result = job.result()
         counts = result.get_counts(self.circuit)
-        measurement = list(counts.keys())[0]
+        measurement = max(counts, key=lambda key: counts[key])
 
         # If output is all zeros, function is constant.
         # The expression is cast to an int (False = 0 => balanced, True = 1 => constant)
-        return int(measurement == '0' * self.n)
+        return int(measurement == '0' * self.n), result.time_taken
 
     def __apply_uf(self, qubits):
         """

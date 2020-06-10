@@ -3,6 +3,7 @@
 import numpy as np
 from qiskit import *
 from qiskit.quantum_info.operators import Operator
+from qiskit import IBMQ
 
 
 class Grover:
@@ -31,10 +32,11 @@ class Grover:
     ```
     """
 
-    def __init__(self, n, f, max_iterations=5):
+    def __init__(self, n, f, provider, max_iterations=5):
         self.n = n
         self.f = f
         self.iteration = 0
+        self.provider = provider
         self.max_iterations = max_iterations
 
         self.zf = None
@@ -72,8 +74,8 @@ class Grover:
             Return 1 if there exists x in [0,1] such that f(x) = 1, and 0 otherwise.
 
         """
-        simulator = Aer.get_backend('qasm_simulator')
-        job = execute(self.circuit, simulator, shots=1)
+        backend = self.provider.get_backend('ibmq_qasm_simulator')
+        job = execute(self.circuit, backend, shots=1)
         result = job.result()
         counts = result.get_counts(self.circuit)
         measurement = list(counts.keys())[0]

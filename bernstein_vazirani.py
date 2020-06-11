@@ -78,7 +78,7 @@ class BernsteinVazirani:
             Returns tuple of ints, equivalent to bit strings a and b.
 
         """
-        job = execute(self.circuit, self.backend, shots=1)
+        job = execute(self.circuit, self.backend, shots=10)
         result = job.result()
         counts = result.get_counts(self.circuit)
         measurement = list(counts.keys())[0]

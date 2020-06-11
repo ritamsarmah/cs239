@@ -76,7 +76,7 @@ class Simon:
     ```
     """
 
-    def __init__(self, n, f, provider):
+    def __init__(self, n, f, backend):
         self.n = n
         self.f = f
         self.uf = None

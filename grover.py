@@ -32,11 +32,11 @@ class Grover:
     ```
     """
 
-    def __init__(self, n, f, backend, max_iterations=5):
+    def __init__(self, n, f, provider, max_iterations=5):
         self.n = n
         self.f = f
         self.iteration = 0
-        self.backend = backend
+        self.provider = provider
         self.max_iterations = max_iterations
         self.time_taken = 0
 
@@ -48,21 +48,26 @@ class Grover:
         """
         Construct program for Grover's algorithm.
         """
+        total_qubits = self.n
+
+        # Load backend based on number of qubits needed. burlington has 5, melbourne has 15
+        self.backend = self.provider.get_backend('ibmq_burlington' if total_qubits <= 5 else 'ibmq_16_melbourne')
+
         # Create a Quantum circuit with n qubits and n classical bits for measurement
-        self.circuit = QuantumCircuit(self.n, self.n)
+        self.circuit = QuantumCircuit(total_qubits, self.n)
 
         # Apply Hadamard to all qubits
-        for q in range(self.n):
+        for q in range(total_qubits):
             self.circuit.h(q)
 
         # Calculate number of times to apply G to qubits
-        k = int(np.floor(np.pi / 4 * np.sqrt(2 ** self.n)))
+        k = int(np.floor(np.pi / 4 * np.sqrt(2 ** total_qubits)))
 
         # Apply G to all qubits
-        self.__apply_g(list(range(self.n)), k)
+        self.__apply_g(list(range(total_qubits)), k)
 
         # Measure all qubits
-        for q in range(self.n):
+        for q in range(total_qubits):
             self.circuit.measure(q, q)
 
     def run(self):
@@ -75,8 +80,13 @@ class Grover:
             Return 1 if there exists x in [0,1] such that f(x) = 1, and 0 otherwise.
 
         """
-        job = execute(self.circuit, self.backend, shots=10)
-        result = job.result()
+        job = execute(self.circuit, self.backend, shots=10, optimization_level=3)
+        try:
+            result = job.result()
+        except qiskit.providers.ibmq.job.exceptions.IBMQJobFailureError:
+            print(job.error_message())
+            return -1, 0
+
         counts = result.get_counts(self.circuit)
         measurement = max(counts, key=lambda key: counts[key])
 

@@ -76,11 +76,11 @@ class Simon:
     ```
     """
 
-    def __init__(self, n, f, backend):
+    def __init__(self, n, f, provider):
         self.n = n
         self.f = f
         self.uf = None
-        self.backend = backend
+        self.provider = provider
 
         self.__construct()
 
@@ -88,15 +88,20 @@ class Simon:
         """
         Construct program for Simon algorithm.
         """
+        total_qubits = 2 * self.n
+
+        # Load backend based on number of qubits needed. burlington has 5, melbourne has 15
+        self.backend = self.provider.get_backend('ibmq_burlington' if total_qubits <= 5 else 'ibmq_16_melbourne')
+
         # Create a Quantum circuit with 2n qubits and n classical bits for measurement
-        self.circuit = QuantumCircuit(2*self.n, self.n)
+        self.circuit = QuantumCircuit(total_qubits, self.n)
 
         # Apply Hadamard to operator qubits only
         for q in range(self.n):
             self.circuit.h(q)
 
         # Apply U_f to all qubits
-        self.__apply_uf(list(range(2*self.n)))
+        self.__apply_uf(list(range(total_qubits)))
 
         # Apply Hadamard to operator qubits only.
         for q in range(self.n):
@@ -117,8 +122,13 @@ class Simon:
 
         """
         numshots = 4 * self.n
-        job = execute(self.circuit, self.backend, shots=numshots)
-        result = job.result()
+        job = execute(self.circuit, self.backend, shots=numshots, optimization_level=3)
+        try:
+            result = job.result()
+        except qiskit.providers.ibmq.job.exceptions.IBMQJobFailureError:
+            print(job.error_message())
+            return -1, 0
+
         counts = result.get_counts(self.circuit)
 
         #reverse all outputted bitstrings.

@@ -28,11 +28,11 @@ class DeutschJozsa:
     ```
     """
 
-    def __init__(self, n, f, backend):
+    def __init__(self, n, f, provider):
         self.n = n
         self.f = f
         self.uf = None
-        self.backend = backend
+        self.provider = provider
 
         self.__construct()
 
@@ -40,18 +40,23 @@ class DeutschJozsa:
         """
         Construct program for Deutsch-Jozsa algorithm.
         """
+        total_qubits = self.n + 1
+
+        # Load backend based on number of qubits needed. burlington has 5, melbourne has 15
+        self.backend = self.provider.get_backend('ibmq_burlington' if total_qubits <= 5 else 'ibmq_16_melbourne')
+
         # Create a Quantum circuit with n+1 qubits and n classical bits for measurement
-        self.circuit = QuantumCircuit(self.n + 1, self.n)
+        self.circuit = QuantumCircuit(total_qubits, self.n)
 
         # Set helper bit (at index n) to 1
         self.circuit.x(self.n)
 
         # Apply Hadamard to all qubits
-        for q in range(self.n + 1):
+        for q in range(total_qubits):
             self.circuit.h(q)
 
         # Apply U_f to all qubits
-        self.__apply_uf(list(range(self.n + 1)))
+        self.__apply_uf(list(range(total_qubits)))
 
         # Apply Hadamard to first n qubits (ignoring helper bit)
         for q in range(self.n):
@@ -71,8 +76,13 @@ class DeutschJozsa:
             Returns tuple of ints, equivalent to bit strings a and b.
 
         """
-        job = execute(self.circuit, self.backend, shots=10)
-        result = job.result()
+        job = execute(self.circuit, self.backend, shots=10, optimization_level=3)
+        try:
+            result = job.result()
+        except qiskit.providers.ibmq.job.exceptions.IBMQJobFailureError:
+            print(job.error_message())
+            return -1, 0
+
         counts = result.get_counts(self.circuit)
         measurement = max(counts, key=lambda key: counts[key])
 

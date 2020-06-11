@@ -32,12 +32,13 @@ class Grover:
     ```
     """
 
-    def __init__(self, n, f, provider, max_iterations=5):
+    def __init__(self, n, f, backend, max_iterations=5):
         self.n = n
         self.f = f
         self.iteration = 0
-        self.provider = provider
+        self.backend = backend
         self.max_iterations = max_iterations
+        self.time_taken = 0
 
         self.zf = None
         self.z0 = None
@@ -74,24 +75,25 @@ class Grover:
             Return 1 if there exists x in [0,1] such that f(x) = 1, and 0 otherwise.
 
         """
-        backend = self.provider.get_backend('ibmq_qasm_simulator')
-        job = execute(self.circuit, backend, shots=1)
+        job = execute(self.circuit, self.backend, shots=10)
         result = job.result()
         counts = result.get_counts(self.circuit)
-        measurement = list(counts.keys())[0]
+        measurement = max(counts, key=lambda key: counts[key])
 
         # Convert measurement into int input for f
         x = int(measurement[::-1], 2)
 
+        self.time_taken = result.time_taken
+
         # Verify output on oracle, if f(x) == 1, we're done
         # Else we re-run if we've got more iterations left
         if self.f(x) == 1:
-            return 1
+            return 1, self.time_taken
         elif self.iteration < self.max_iterations:
             self.iteration += 1
             return self.run()
         else:
-            return 0
+            return 0, self.time_taken
 
     def __apply_g(self, qubits, k):
         """

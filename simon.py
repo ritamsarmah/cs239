@@ -80,7 +80,7 @@ class Simon:
         self.n = n
         self.f = f
         self.uf = None
-        self.provider = provider
+        self.backend = backend
 
         self.__construct()
 
@@ -116,9 +116,8 @@ class Simon:
             Return a single int, "s"
 
         """
-        backend = self.provider.get_backend('ibmq_qasm_simulator')
         numshots = 4 * self.n
-        job = execute(self.circuit, backend, shots=numshots)
+        job = execute(self.circuit, self.backend, shots=numshots)
         result = job.result()
         counts = result.get_counts(self.circuit)
 
@@ -136,7 +135,7 @@ class Simon:
         #print(s)
 
         # return output of classical eqn solver: "s".
-        return s
+        return s, result.time_taken
 
     def __apply_uf(self, qubits):
         """

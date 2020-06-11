@@ -45,8 +45,9 @@ def test_algorithm(tests, algorithm, backend, verbose=True):
 if __name__ == "__main__":
     # Load least busy backend and use the same QC to run all tests
     provider = IBMQ.enable_account('58b3caece224fe45e9eebe211808f050207d41998913468ea773c2024c5cb8ea278daae70e9a8d0a0656f205a198109aff811c48ceb6f38e217e2c29ce831fd3')
-    small_devices = provider.backends(filters=lambda x: x.configuration().n_qubits == 5 and not x.configuration().simulator)
-    backend = least_busy(small_devices)
+    #  small_devices = provider.backends(filters=lambda x: x.configuration().n_qubits == 5 and not x.configuration().simulator)
+    #  backend = least_busy(small_devices)
+    backend = provider.get_backend('ibmq_burlington')
     print(f"Using backend: {backend}")
 
     # Test case format: ((n, oracle), expected_output)
@@ -70,8 +71,8 @@ if __name__ == "__main__":
 
         ((5, lambda x: simon_fn(x, 0b10011)), 0b10011),
         ((5, lambda x: simon_fn(x, 0b10100)), 0b10100),
-        ((6, lambda x: simon_fn(x, 0b100101)), 0b100101),
-        ((6, lambda x: simon_fn(x, 0b110000)), 0b110000)
+        #  ((6, lambda x: simon_fn(x, 0b100101)), 0b100101),
+        #  ((6, lambda x: simon_fn(x, 0b110000)), 0b110000)
     ]
 
     test_algorithm(simon_tests, simon.Simon, backend)
@@ -88,20 +89,20 @@ if __name__ == "__main__":
         ((5, lambda x: int(x == 0b10101)), 1),
         ((5, lambda x: 0), 0),
 
-        ((6, lambda x: int(x == 0b101010)), 1),
-        ((6, lambda x: 0), 0),
-        ((7, lambda x: int(x == 0b1010111)), 1),
-        ((7, lambda x: 0), 0),
-        ((8, lambda x: int(x == 0b10101)), 1),
-        ((8, lambda x: 0), 0),
+        #  ((6, lambda x: int(x == 0b101010)), 1),
+        #  ((6, lambda x: 0), 0),
+        #  ((7, lambda x: int(x == 0b1010111)), 1),
+        #  ((7, lambda x: 0), 0),
+        #  ((8, lambda x: int(x == 0b10101)), 1),
+        #  ((8, lambda x: 0), 0),
 
-        ((9, lambda x: int(x == 0b101010011)), 1),
-        ((9, lambda x: int(x == 0b101011111)), 1),
-        ((10, lambda x: int(x == 0b1001010011)), 1),
-        ((10, lambda x: int(x == 0b1)), 1)
+        #  ((9, lambda x: int(x == 0b101010011)), 1),
+        #  ((9, lambda x: int(x == 0b101011111)), 1),
+        #  ((10, lambda x: int(x == 0b1001010011)), 1),
+        #  ((10, lambda x: int(x == 0b1)), 1)
     ]
 
-    #  test_algorithm(grover_tests, grover.Grover, backend)
+    test_algorithm(grover_tests, grover.Grover, backend)
 
     dj_tests = [
         ((1, lambda x: x % 2), 0),
@@ -115,18 +116,18 @@ if __name__ == "__main__":
         ((5, lambda x: x % 2), 0),
         ((5, lambda x: 0), 1),
 
-        ((6, lambda x: x % 2), 0),
-        ((6, lambda x: 0), 1),
-        ((7, lambda x: x % 2), 0),
-        ((7, lambda x: 0), 1),
-        ((8, lambda x: x % 2), 0),
-        ((8, lambda x: 0), 1),
-        ((9, lambda x: x % 2), 0),
-        ((9, lambda x: 0), 1),
-        ((10, lambda x: x % 2), 0),
-        ((10, lambda x: 0), 1),
-        ((11, lambda x: x % 2), 0),
-        ((11, lambda x: 0), 1)
+        #  ((6, lambda x: x % 2), 0),
+        #  ((6, lambda x: 0), 1),
+        #  ((7, lambda x: x % 2), 0),
+        #  ((7, lambda x: 0), 1),
+        #  ((8, lambda x: x % 2), 0),
+        #  ((8, lambda x: 0), 1),
+        #  ((9, lambda x: x % 2), 0),
+        #  ((9, lambda x: 0), 1),
+        #  ((10, lambda x: x % 2), 0),
+        #  ((10, lambda x: 0), 1),
+        #  ((11, lambda x: x % 2), 0),
+        #  ((11, lambda x: 0), 1)
     ]
 
     test_algorithm(dj_tests, deutsch_jozsa.DeutschJozsa, backend)
@@ -155,19 +156,19 @@ if __name__ == "__main__":
         ((5, lambda x: sum(
             [(16 & x != 0), (4 & x != 0), (2 & x != 0)]) % 2), (0b10110, 0)),
 
-        ((6, lambda x: mult_bstrings(0b1101 << 2, x)), (0b1101 << 2, 0)),
-        ((6, lambda x: 1), (0, 1)),
-        ((7, lambda x: mult_bstrings(0b1101 << 2, x)), (0b1101 << 2, 0)),
-        ((7, lambda x: 1), (0, 1)),
-        ((8, lambda x: mult_bstrings(0b1101 << 3, x)), (0b1101 << 3, 0)),
-        ((8, lambda x: 1), (0, 1)),
-        ((9, lambda x: mult_bstrings(0b1101 << 4, x)), (0b1101 << 4, 0)),
-        ((9, lambda x: 1), (0, 1)),
-        ((10, lambda x: mult_bstrings(0b1101 << 5, x)), (0b1101 << 5, 0)),
-        ((10, lambda x: 1), (0, 1)),
-        ((11, lambda x: mult_bstrings(0b1101 << 6, x)), (0b1101 << 6, 0)),
-        ((11, lambda x: 1), (0, 1))
-        #((12, lambda x: mult_bstrings(0b1101 << 7, x)), (0b1101 << 8, 0))
+        #  ((6, lambda x: mult_bstrings(0b1101 << 2, x)), (0b1101 << 2, 0)),
+        #  ((6, lambda x: 1), (0, 1)),
+        #  ((7, lambda x: mult_bstrings(0b1101 << 2, x)), (0b1101 << 2, 0)),
+        #  ((7, lambda x: 1), (0, 1)),
+        #  ((8, lambda x: mult_bstrings(0b1101 << 3, x)), (0b1101 << 3, 0)),
+        #  ((8, lambda x: 1), (0, 1)),
+        #  ((9, lambda x: mult_bstrings(0b1101 << 4, x)), (0b1101 << 4, 0)),
+        #  ((9, lambda x: 1), (0, 1)),
+        #  ((10, lambda x: mult_bstrings(0b1101 << 5, x)), (0b1101 << 5, 0)),
+        #  ((10, lambda x: 1), (0, 1)),
+        #  ((11, lambda x: mult_bstrings(0b1101 << 6, x)), (0b1101 << 6, 0)),
+        #  ((11, lambda x: 1), (0, 1))
+        #  ((12, lambda x: mult_bstrings(0b1101 << 7, x)), (0b1101 << 8, 0))
     ]
 
     test_algorithm(bv_tests, bernstein_vazirani.BernsteinVazirani, backend)

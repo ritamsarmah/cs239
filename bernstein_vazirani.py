@@ -35,11 +35,11 @@ class BernsteinVazirani:
     ```
     """
 
-    def __init__(self, n, f, provider):
+    def __init__(self, n, f, backend):
         self.n = n
         self.f = f
         self.uf = None
-        self.provider = provider
+        self.backend = backend
 
         self.__construct()
 
@@ -78,8 +78,7 @@ class BernsteinVazirani:
             Returns tuple of ints, equivalent to bit strings a and b.
 
         """
-        backend = self.provider.get_backend('ibmq_qasm_simulator')
-        job = execute(self.circuit, backend, shots=1)
+        job = execute(self.circuit, self.backend, shots=1)
         result = job.result()
         counts = result.get_counts(self.circuit)
         measurement = list(counts.keys())[0]
@@ -90,7 +89,7 @@ class BernsteinVazirani:
         # Get b by calling function
         b = self.f(0)
 
-        return (a, b)
+        return (a, b), result.time_taken
 
     def __apply_uf(self, qubits):
         """

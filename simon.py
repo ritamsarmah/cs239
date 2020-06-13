@@ -111,6 +111,10 @@ class Simon:
         for q in range(self.n):
             self.circuit.measure(q, q)
 
+        numshots = 4 * self.n
+        transpiled = transpile(self.circuit, self.backend)
+        self.qobj = assemble(transpiled, self.backend, shots=numshots, optimization_level=3)
+
     def run(self):
         """
         Run Simon algorithm.
@@ -121,8 +125,8 @@ class Simon:
             Return a single int, "s"
 
         """
-        numshots = 4 * self.n
-        job = execute(self.circuit, self.backend, shots=numshots, optimization_level=3)
+        job = self.backend.run(self.qobj)
+
         try:
             result = job.result()
         except qiskit.providers.ibmq.job.exceptions.IBMQJobFailureError:

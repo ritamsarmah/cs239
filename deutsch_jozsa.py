@@ -3,7 +3,7 @@
 import numpy as np
 from qiskit import *
 from qiskit.quantum_info.operators import Operator
-from qiskit import IBMQ
+from qiskit import IBMQ, assemble, transpile
 
 
 class DeutschJozsa:
@@ -66,6 +66,9 @@ class DeutschJozsa:
         for q in range(self.n):
             self.circuit.measure(q, q)
 
+        transpiled = transpile(self.circuit, self.backend)
+        self.qobj = assemble(transpiled, self.backend, shots=1024, optimization_level=3)
+
     def run(self):
         """
         Run Deutsch-Jozsa algorithm.
@@ -76,13 +79,15 @@ class DeutschJozsa:
             Returns tuple of ints, equivalent to bit strings a and b.
 
         """
-        job = execute(self.circuit, self.backend, shots=10, optimization_level=3)
+        job = self.backend.run(self.qobj)
+
         try:
             result = job.result()
         except qiskit.providers.ibmq.job.exceptions.IBMQJobFailureError:
             print(job.error_message())
             return -1, 0
 
+        # Get most common measurement
         counts = result.get_counts(self.circuit)
         measurement = max(counts, key=lambda key: counts[key])
 

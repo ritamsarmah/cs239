@@ -3,7 +3,7 @@
 import numpy as np
 from qiskit import *
 from qiskit.quantum_info.operators import Operator
-from qiskit import IBMQ
+from qiskit import IBMQ, transpile, assemble
 
 
 class BernsteinVazirani:
@@ -50,7 +50,8 @@ class BernsteinVazirani:
         total_qubits = self.n + 1
 
         # Load backend based on number of qubits needed. burlington has 5, melbourne has 15
-        self.backend = self.provider.get_backend('ibmq_burlington' if total_qubits <= 5 else 'ibmq_16_melbourne')
+        self.backend = self.provider.get_backend(
+            'ibmq_burlington' if total_qubits <= 5 else 'ibmq_16_melbourne')
 
         # Create a Quantum circuit with n+1 qubits and n classical bits for measurement
         self.circuit = QuantumCircuit(total_qubits, self.n)
@@ -73,6 +74,9 @@ class BernsteinVazirani:
         for q in range(self.n):
             self.circuit.measure(q, q)
 
+        self.transpiled = transpile(self.circuit, self.backend)
+        self.qobj = assemble(transpiled, self.backend, shots=1024, optimization_level=3)
+
     def run(self):
         """
         Run B-V algorithm.
@@ -83,7 +87,8 @@ class BernsteinVazirani:
             Returns tuple of ints, equivalent to bit strings a and b.
 
         """
-        job = execute(self.circuit, self.backend, shots=10, optimization_level=3)
+        job = self.backend.run(self.qobj)
+
         try:
             result = job.result()
         except qiskit.providers.ibmq.job.exceptions.IBMQJobFailureError:
@@ -91,7 +96,7 @@ class BernsteinVazirani:
             return -1, 0
 
         counts = result.get_counts(self.circuit)
-        measurement = list(counts.keys())[0]
+        measurement = max(counts, key=lambda key: counts[key])
 
         # Get a by converting measurement to integer
         a = int(measurement[::-1], 2)
@@ -122,7 +127,7 @@ class BernsteinVazirani:
                     row = (x << 1) ^ b
                     col = (x << 1) ^ (self.f(x) ^ b)
                     U_f[row][col] = 1
-            
+
             self.uf = Operator(U_f)
 
         self.circuit.append(self.uf, qubits[::-1])

@@ -6,6 +6,21 @@ from qiskit.quantum_info.operators import Operator
 from qiskit import IBMQ, assemble, transpile
 
 
+'''
+#to create manual trivial examples, use this "__apply_zf" definition.
+
+def __apply_zf(self, qubits):
+    """
+    NOTE:
+        - We want to create a phase flip iff x_{n-1} = x_n = 1.
+            (i.e. oracle function: x%4 == 3, or x ends with "0b...11")
+        - This should be doable with a very simple controlled-z gate!
+    """
+    self.circuit.barrier()
+    self.circuit.cz(self.n-2, self.n-1)
+    self.circuit.barrier()
+'''
+
 class Grover:
     """
     Grover's algorithm.

@@ -7,6 +7,49 @@ from qiskit import IBMQ
 
 
 '''
+* to create manual trivial / nontrivial circuits, just replace the U_f code with
+    a function like the below:
+
+def ntriv_4(circuit):
+    """
+    the simon function is:
+        s = 0b1001
+        f(x) = min(x, x^s)
+
+    the U-F circuit is: {x1,x2,x3,x4,h1,h2,h3,h4} --> {x1,x2,x3,x4,f1+h1,f2+h2,f3+h3,f4+h4}
+        f1 = 0
+        f2 = x2
+        f3 = x3
+        f4 = x1+x4
+    """
+    circuit.barrier()
+    #f2
+    circuit.cx(1, 5)
+    #f3
+    circuit.cx(2, 6)
+    #f4
+    circuit.cx(0, 3)
+    circuit.cx(3, 7)
+    circuit.cx(0, 3)
+    #circuit.draw('mpl')
+    #barrier 2, for drawing...
+    circuit.barrier()
+
+def triv_4(circuit):
+    """
+    in this trivial example, the secret s=0.
+    so f(x) = x.
+    Thus, U_f = {x1,x2,x3,x4,h1,h2,h3,h4} --> {x1,x2,x3,x4,x1+h1,x2+h2,x3+h3,x4+h3}
+    """
+    circuit.barrier()
+    circuit.cx(0,4)
+    circuit.cx(1,5)
+    circuit.cx(2,6)
+    circuit.cx(3,7)
+    circuit.barrier()
+'''
+
+'''
 Simon Circuit:
 
        _    ____    _

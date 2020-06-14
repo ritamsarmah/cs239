@@ -5,6 +5,37 @@ from qiskit import *
 from qiskit.quantum_info.operators import Operator
 from qiskit import IBMQ, transpile, assemble
 
+'''
+Additional code for manually compiled U_f tests:
+
+def bv_obtain_gates(a):
+    n = len(a)
+    gates = []
+    for i, v in enumerate(a):
+        if v=='1':
+            #if the ith number in 'a' is 1, then create cnot gate from qb i-->helper.
+            gates.append((i, n))
+    return n, gates
+
+def build_circuit(circuit, a, b):
+    n, gates = bv_obtain_gates(a)
+    circuit.barrier()
+    for g in gates:
+        circuit.cx(g[0], g[1])
+    if int(b)==1:
+        circuit.x(n)
+    circuit.barrier()
+
+## example of a trivial U_f circuit:
+def triv_4(circuit):
+    a, b = '0011', '1'
+    build_circuit(circuit, a, b)
+
+## example of a nontrivial circuit:
+def ntriv_4(circuit):
+    a, b = '1111', '1'
+    build_circuit(circuit, a, b)
+'''
 
 class BernsteinVazirani:
     """

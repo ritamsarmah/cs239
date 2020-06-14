@@ -74,7 +74,7 @@ class BernsteinVazirani:
         for q in range(self.n):
             self.circuit.measure(q, q)
 
-        self.transpiled = transpile(self.circuit, self.backend)
+        transpiled = transpile(self.circuit, self.backend)
         self.qobj = assemble(transpiled, self.backend, shots=1024, optimization_level=3)
 
     def run(self):
